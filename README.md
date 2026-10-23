@@ -1,5 +1,10 @@
 # VoiceStudio Hermes plugin
 
+![License](https://img.shields.io/github/license/EternalShade3D/voicestudio-hermes-plugin)
+![Stars](https://img.shields.io/github/stars/EternalShade3D/voicestudio-hermes-plugin?style=social)
+![Forks](https://img.shields.io/github/forks/EternalShade3D/voicestudio-hermes-plugin?style=social)
+![Last Commit](https://img.shields.io/github/last-commit/EternalShade3D/voicestudio-hermes-plugin)
+
 Plugin TTS provider named `voicestudio`, so the voice is a settings value instead of a hardcoded id in a script.
 
 ## Verified live (2026-10-22)

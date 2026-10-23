@@ -194,7 +194,7 @@ def register(ctx):
             return "Failed to set voice: %s" % e
 
     try:
-        reg = ctx.register_command("voicestudio", _handle_command, description="VoiceStudio TTS commands: /voicestudio <name> or /voicestudio refresh")
+        reg = ctx.register_command("voicestudio", _handle_command, description="VoiceStudio TTS commands: /voicestudio <name> or /voicestudio refresh", args_hint="[name|refresh]")
         logger.info("voicestudio: command registration result: %s", reg)
     except Exception as e:
         logger.error("voicestudio: command registration failed: %s", e, exc_info=True)

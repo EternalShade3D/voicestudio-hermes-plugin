@@ -152,12 +152,12 @@ def register(ctx):
         base_url = ctx.get_config("base_url", default=client.DEFAULT_BASE_URL)
         if not args:
             voices = client.list_voices_cached(base_url)
-            names = [v.get("name") or v.get("id") for v in voices]
+            names = [v.get("display") or v.get("id") for v in voices]
             current = provider.default_voice()
             return "Current voice: %s\nAvailable: %s" % (current, ", ".join(names))
         if args.lower() == "refresh":
             voices = client.list_voices_cached(base_url, force=True)
-            names = [v.get("name") or v.get("id") for v in voices]
+            names = [v.get("display") or v.get("id") for v in voices]
             # Update plugin.yaml choices
             try:
                 import yaml
@@ -193,4 +193,8 @@ def register(ctx):
         except Exception as e:
             return "Failed to set voice: %s" % e
 
-    ctx.register_command("voicestudio", _handle_command, description="VoiceStudio TTS commands: /voicestudio <name> or /voicestudio refresh")
+    try:
+        reg = ctx.register_command("voicestudio", _handle_command, description="VoiceStudio TTS commands: /voicestudio <name> or /voicestudio refresh")
+        logger.info("voicestudio: command registration result: %s", reg)
+    except Exception as e:
+        logger.error("voicestudio: command registration failed: %s", e, exc_info=True)

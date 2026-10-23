@@ -146,3 +146,51 @@ def register(ctx):
     )
     ctx.register_tts_provider(provider)
     logger.debug("voicestudio plugin registered: TTS provider '%s'", provider.name)
+
+    def _handle_command(raw_args: str) -> str:
+        args = (raw_args or "").strip()
+        base_url = ctx.get_config("base_url", default=client.DEFAULT_BASE_URL)
+        if not args:
+            voices = client.list_voices_cached(base_url)
+            names = [v.get("name") or v.get("id") for v in voices]
+            current = provider.default_voice()
+            return "Current voice: %s\nAvailable: %s" % (current, ", ".join(names))
+        if args.lower() == "refresh":
+            voices = client.list_voices_cached(base_url, force=True)
+            names = [v.get("name") or v.get("id") for v in voices]
+            # Update plugin.yaml choices
+            try:
+                import yaml
+                from hermes_constants import get_hermes_home
+                plugin_path = get_hermes_home() / "plugins" / "voicestudio" / "plugin.yaml"
+                with open(plugin_path, "r", encoding="utf-8") as fh:
+                    data = yaml.safe_load(fh) or {}
+                schema = data.get("config_schema", {}) or {}
+                voice_field = schema.get("voice", {}) or {}
+                voice_field["choices"] = names
+                schema["voice"] = voice_field
+                data["config_schema"] = schema
+                with open(plugin_path, "w", encoding="utf-8") as fh:
+                    yaml.safe_dump(data, fh, default_flow_style=False, allow_unicode=True)
+                return "Refreshed %d voices: %s" % (len(names), ", ".join(names))
+            except Exception as e:
+                return "Fetched %d voices but failed to update plugin.yaml: %s" % (len(names), e)
+        # Treat as voice name
+        try:
+            import yaml
+            from hermes_constants import get_hermes_home
+            config_path = get_hermes_home() / "config.yaml"
+            with open(config_path, "r", encoding="utf-8") as fh:
+                config = yaml.safe_load(fh) or {}
+            plugins = config.setdefault("plugins", {})
+            entries = plugins.setdefault("entries", {})
+            vs = entries.setdefault("voicestudio", {})
+            settings = vs.setdefault("settings", {})
+            settings["voice"] = args
+            with open(config_path, "w", encoding="utf-8") as fh:
+                yaml.safe_dump(config, fh, default_flow_style=False, allow_unicode=True)
+            return "Voice set to: %s" % args
+        except Exception as e:
+            return "Failed to set voice: %s" % e
+
+    ctx.register_command("voicestudio", _handle_command, description="VoiceStudio TTS commands: /voicestudio <name> or /voicestudio refresh")

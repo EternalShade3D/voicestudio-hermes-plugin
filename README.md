@@ -27,7 +27,13 @@ Plugin TTS provider named `voicestudio`, so the voice is a settings value instea
 | `timeout_s` | 180 | Read timeout for generation |
 | `warm_path` / `release_path` | empty | Called on the read-aloud lease on / release; empty = no-op |
 
-## Notes
+## Commands
+
+| Command | Description |
+|---|---|
+| `/voicestudio` | Show current voice and list available voices |
+| `/voicestudio <name>` | Set voice by name (resolved dynamically) |
+| `/voicestudio refresh` | Fetch voices from app and update the dropdown choices |
 
 - Hermes gives a plugin with a `config_schema` an automatic settings page. It does not build a voice dropdown from `list_voices()` — the desktop voice picker is ElevenLabs-only plus a static provider list. So you get fields (base_url, voice, engine, timeout), not a picker of the app's Saved voices.
 - A `tts.providers.<name>: type: command` entry in `config.yaml` wins over a plugin registration. Pick one: keep auto-speak with the bridge, or go plugin-only.

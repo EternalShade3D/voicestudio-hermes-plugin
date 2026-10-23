@@ -115,12 +115,12 @@ def _gender(profile):
     return ""
 
 
-def list_voices_cached(base_url, ttl=_VOICES_TTL_S):
+def list_voices_cached(base_url, ttl=_VOICES_TTL_S, force=False):
     """Cached voice catalog so a warm loop does not re-hit the app on every reply."""
     key = normalize_base_url(base_url)
     now = time.time()
     cache = _voices_cache
-    if cache["key"] == key and (now - cache["at"]) < ttl and cache["voices"]:
+    if not force and cache["key"] == key and (now - cache["at"]) < ttl and cache["voices"]:
         return cache["voices"]
     voices = [{"id": p["id"], "display": p.get("name") or p["id"],
                "language": p.get("language") or "",

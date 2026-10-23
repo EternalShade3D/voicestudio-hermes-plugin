@@ -1,0 +1,148 @@
+"""VoiceStudio Hermes plugin - registers a plugin TTS provider.
+
+Provider name is 'voicestudio' (not a built-in, so it is accepted by the TTS
+registry). Set it with:
+
+    hermes config set tts.provider voicestudio
+
+Precedence note from upstream: a `tts.providers.<name>: type: command` entry in
+config.yaml wins over a plugin registration, so if the old command bridge keeps
+the name 'voicestudio' this plugin will not be used for dispatch. Use a different
+provider name for the bridge, or drop the bridge entry.
+"""
+import logging
+from typing import Any, Optional
+
+from agent.provider_base import CatalogProviderBase
+from agent.tts_provider import DEFAULT_OUTPUT_FORMAT, TTSProvider
+
+from . import client
+
+logger = logging.getLogger(__name__)
+
+_PLUGIN = "voicestudio"
+
+
+class VoiceStudioProvider(TTSProvider):
+    """VoiceStudio sidecar backend: POST /generate, voices from GET /profiles."""
+
+    def __init__(self, base_url=client.DEFAULT_BASE_URL, voice="", engine="",
+                 timeout_s=client.DEFAULT_READ_TIMEOUT_S, warm_path="", release_path=""):
+        self._base_url = client.normalize_base_url(base_url)
+        self._voice = voice or ""
+        self._engine = engine or ""
+        self._timeout_s = int(timeout_s or client.DEFAULT_READ_TIMEOUT_S)
+        self._warm_path = warm_path or ""
+        self._release_path = release_path or ""
+
+    # ---- identity ----
+    @property
+    def name(self) -> str:
+        return _PLUGIN
+
+    @property
+    def display_name(self) -> str:
+        return "VoiceStudio"
+
+    def get_setup_schema(self) -> dict[str, Any]:
+        return {"name": self.display_name, "badge": "sidecar", "tag": "voice", "env_vars": []}
+
+    def is_available(self) -> bool:
+        """Must not raise and must not make network calls - the picker calls this on every paint."""
+        return bool(self._base_url)
+
+    # ---- voice catalog (powers the settings dropdown) ----
+    def list_voices(self) -> list[dict[str, Any]]:
+        return client.list_voices_cached(self._base_url)
+
+    def default_voice(self) -> Optional[str]:
+        """Always an id: reads voice from config dynamically so settings changes take effect without restart."""
+        voice = self._read_voice_from_config() or self._voice
+        if voice:
+            return client.resolve_voice(self._base_url, voice) or voice
+        voices = self.list_voices()
+        return voices[0]["id"] if voices else None
+
+    def _debug(self) -> bool:
+        try:
+            from hermes_constants import get_hermes_home
+            import yaml
+            config_path = get_hermes_home() / "config.yaml"
+            with open(config_path, "r", encoding="utf-8") as fh:
+                config = yaml.safe_load(fh) or {}
+            settings = (config.get("plugins", {}) or {}).get("entries", {}).get("voicestudio", {}).get("settings", {}) or {}
+            return bool(settings.get("debug", False))
+        except Exception:
+            return False
+
+    def _read_voice_from_config(self) -> str:
+        """Read the voice setting from config.yaml so changes take effect without plugin re-registration."""
+        try:
+            from hermes_constants import get_hermes_home
+            hermes_home = get_hermes_home()
+            config_path = hermes_home / "config.yaml"
+            import yaml
+            with open(config_path, "r", encoding="utf-8") as fh:
+                config = yaml.safe_load(fh) or {}
+            plugins = config.get("plugins", {}) or {}
+            entries = plugins.get("entries", {}) or {}
+            vs = entries.get("voicestudio", {}) or {}
+            settings = vs.get("settings", {}) or {}
+            voice = str(settings.get("voice", "") or "").strip()
+            if self._debug():
+                import logging
+                logging.getLogger(__name__).info("_read_voice_from_config: home=%s voice=%s", hermes_home, voice)
+            return voice
+        except Exception:
+            return ""
+
+    # ---- synthesis ----
+    def synthesize(self, text, output_path, *, voice=None, model=None, speed=None,
+                   format=DEFAULT_OUTPUT_FORMAT, **extra) -> str:
+        """Synthesize text into output_path; returns the written path. Raises on failure."""
+        wanted = self.default_voice()
+        profile_id = client.resolve_voice(self._base_url, wanted) or wanted
+        result = client.generate(self._base_url, text, profile_id, self._engine, self._timeout_s)
+        if result.get("status") != 200:
+            err = result.get("error") or "http_error"
+            detail = client._decode(result.get("body") or b"")
+            raise RuntimeError(
+                "VoiceStudio synthesis failed (%s): %s" % (err, str(detail)[:300] or "no body"))
+        body = result.get("body") or b""
+        if isinstance(body, str):
+            body = body.encode("utf-8")
+        if not body:
+            raise RuntimeError("VoiceStudio returned an empty audio body for profile %s" % profile_id)
+        # The app answers with WAV bytes. If a different container was asked for, the
+        # path must still describe what is actually in it, otherwise ffmpeg/playback
+        # misreads the file. Coerce the extension to the real format.
+        if client.looks_like_wav(body) and not output_path.lower().endswith(".wav"):
+            output_path = output_path.rsplit(".", 1)[0] + ".wav"
+        with open(output_path, "wb") as fh:
+            fh.write(body)
+        return output_path
+
+    # ---- lease hooks (read-aloud on / last lease released) ----
+    def warm(self) -> None:
+        if not self._warm_path:
+            return
+        client.api_get(self._base_url, self._warm_path, timeout=client.PROBE_TIMEOUT_S)
+
+    def release(self) -> None:
+        if not self._release_path:
+            return
+        client.api_get(self._base_url, self._release_path, timeout=client.PROBE_TIMEOUT_S)
+
+
+def register(ctx):
+    """Wire the provider into the TTS registry from plugin settings."""
+    provider = VoiceStudioProvider(
+        base_url=ctx.get_config("base_url", default=client.DEFAULT_BASE_URL),
+        voice=ctx.get_config("voice", default=""),
+        engine=ctx.get_config("engine", default=""),
+        timeout_s=ctx.get_config("timeout_s", default=client.DEFAULT_READ_TIMEOUT_S),
+        warm_path=ctx.get_config("warm_path", default=""),
+        release_path=ctx.get_config("release_path", default=""),
+    )
+    ctx.register_tts_provider(provider)
+    logger.debug("voicestudio plugin registered: TTS provider '%s'", provider.name)

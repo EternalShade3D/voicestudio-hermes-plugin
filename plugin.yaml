@@ -1,0 +1,23 @@
+name: voicestudio
+version: 1.0.0
+manifest_version: 2
+api_version: 1
+description: >
+  VoiceStudio TTS provider for Hermes: registers a plugin TTS provider named
+  'voicestudio' so base_url/voice/engine are settings values. Uses the app's
+  deterministic POST /generate route (not /v1/audio/speech), lists the app's
+  Saved voices through GET /profiles, and calls optional warm/release paths on
+  the read-aloud lease (no-op when unset). The 'voice' field is an enum dropdown
+  built from the 'choices' list below; edit choices when the app's saved voices
+  change (Hermes does not auto-refresh plugin-setting option lists).
+license: MIT
+requires_hermes: ">=0.21"
+tags: [tts, voice, audio]
+config_schema:
+  base_url: {type: str, default: "http://127.0.0.1:3900", description: "VoiceStudio server base URL", required: false}
+  voice: {type: str, default: "EternalMita_V3", description: "Voice for synthesis (id or name; name resolved via /profiles)", required: false, choices: ["funny", "ref_en_o2_18s", "VoiceStudio Demo Voice", "EternalMita_V3", "EternalMita_V4", "EternalMita_V2", "Mita_EN_CN_V1", "Russian Companion", "EternalMita_Funny_V1", "4", "2"]}
+  engine: {type: str, default: "", description: "Engine name when the app needs one; empty uses the app's current engine", required: false}
+  timeout_s: {type: int, default: 180, description: "Read timeout in seconds for generation calls", required: false}
+  warm_path: {type: str, default: "", description: "Optional app path called when read-aloud is turned on (engine preload); empty = no-op", required: false}
+  release_path: {type: str, default: "", description: "Optional app path called when the last read-aloud lease is released; empty = no-op", required: false}
+  debug: {type: bool, default: false, description: "Enable debug logging for voice resolution (reads from config dynamically)", required: false}

@@ -1,9 +1,9 @@
 # VoiceStudio Hermes plugin
 
-![License](https://img.shields.io/github/license/EternalShade3D/voicestudio-hermes-plugin)
-![Stars](https://img.shields.io/github/stars/EternalShade3D/voicestudio-hermes-plugin?style=social)
-![Forks](https://img.shields.io/github/forks/EternalShade3D/voicestudio-hermes-plugin?style=social)
-![Last Commit](https://img.shields.io/github/last-commit/EternalShade3D/voicestudio-hermes-plugin)
+<a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases/latest"><img src="https://img.shields.io/github/v/release/EternalShade3D/voicestudio-hermes-plugin?style=for-the-badge&labelColor=26282e&label=release&color=41CD52" alt="Latest release"></a>
+<a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&labelColor=26282e" alt="License: MIT"></a>
+<a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/github/stars/EternalShade3D/voicestudio-hermes-plugin?style=for-the-badge&labelColor=26282e&label=stars&color=41CD52" alt="Stars"></a>
+<a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/badge/Hermes-Plugin-3776AB?style=for-the-badge&labelColor=26282e&logo=hermes&logoColor=white" alt="Hermes Plugin"></a>
 
 Plugin TTS provider named `voicestudio`, so the voice is a settings value instead of a hardcoded id in a script.
 

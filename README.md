@@ -5,6 +5,10 @@
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/github/stars/EternalShade3D/voicestudio-hermes-plugin?style=for-the-badge&labelColor=26282e&label=stars&color=41CD52" alt="Stars"></a>
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/badge/Hermes-Plugin-3776AB?style=for-the-badge&labelColor=26282e&logo=hermes&logoColor=white" alt="Hermes Plugin"></a>
 
+## Screenshot
+
+![Plugin UI](screenshot.png)
+
 Plugin TTS provider named `voicestudio`, so the voice is a settings value instead of a hardcoded id in a script.
 
 ## Verified live (2026-10-22)

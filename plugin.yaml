@@ -68,3 +68,7 @@ tags:
 - voice
 - audio
 version: 1.0.0
+author: EternalShade3D
+homepage: https://github.com/EternalShade3D/voicestudio-hermes-plugin
+provides_tools: []
+provides_hooks: []

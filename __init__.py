@@ -20,16 +20,23 @@ from . import client
 
 logger = logging.getLogger(__name__)
 
+# Plugin identifier used for registration and config lookup.
 _PLUGIN = "voicestudio"
 
 
 class VoiceStudioProvider(TTSProvider):
-    """VoiceStudio sidecar backend: POST /generate, voices from GET /profiles."""
+    """VoiceStudio sidecar backend: POST /generate, voices from GET /profiles.
+
+    The provider is instantiated once at plugin registration with initial settings
+    from config.yaml. However, voice selection is resolved dynamically via
+    _read_voice_from_config() so that settings changes take effect without
+    restarting the gateway.
+    """
 
     def __init__(self, base_url=client.DEFAULT_BASE_URL, voice="", engine="",
                  timeout_s=client.DEFAULT_READ_TIMEOUT_S, warm_path="", release_path=""):
         self._base_url = client.normalize_base_url(base_url)
-        self._voice = voice or ""
+        self._voice = voice or ""  # Initial voice from config (may become stale)
         self._engine = engine or ""
         self._timeout_s = int(timeout_s or client.DEFAULT_READ_TIMEOUT_S)
         self._warm_path = warm_path or ""
@@ -56,7 +63,13 @@ class VoiceStudioProvider(TTSProvider):
         return client.list_voices_cached(self._base_url)
 
     def default_voice(self) -> Optional[str]:
-        """Always an id: reads voice from config dynamically so settings changes take effect without restart."""
+        """Always an id: reads voice from config dynamically so settings changes take effect without restart.
+
+        Resolution order:
+        1. Read voice from config.yaml (profile-scoped via get_hermes_home())
+        2. Fall back to self._voice (set at registration, may be stale)
+        3. If neither, use the first available voice from the app
+        """
         voice = self._read_voice_from_config() or self._voice
         if voice:
             return client.resolve_voice(self._base_url, voice) or voice
@@ -64,6 +77,7 @@ class VoiceStudioProvider(TTSProvider):
         return voices[0]["id"] if voices else None
 
     def _debug(self) -> bool:
+        """Check if debug logging is enabled in plugin settings."""
         try:
             from hermes_constants import get_hermes_home
             import yaml
@@ -76,7 +90,11 @@ class VoiceStudioProvider(TTSProvider):
             return False
 
     def _read_voice_from_config(self) -> str:
-        """Read the voice setting from config.yaml so changes take effect without plugin re-registration."""
+        """Read the voice setting from config.yaml so changes take effect without plugin re-registration.
+
+        Uses get_hermes_home() from hermes_constants (NOT os.environ) because the
+        gateway scopes config per-profile via a contextvar, not an env var.
+        """
         try:
             from hermes_constants import get_hermes_home
             hermes_home = get_hermes_home()
@@ -99,7 +117,12 @@ class VoiceStudioProvider(TTSProvider):
     # ---- synthesis ----
     def synthesize(self, text, output_path, *, voice=None, model=None, speed=None,
                    format=DEFAULT_OUTPUT_FORMAT, **extra) -> str:
-        """Synthesize text into output_path; returns the written path. Raises on failure."""
+        """Synthesize text into output_path; returns the written path. Raises on failure.
+
+        Note: ignores any 'voice' param passed by the TTS system. Always uses
+        self.default_voice() which reads from config dynamically. This prevents
+        the TTS system from overriding the configured voice.
+        """
         wanted = self.default_voice()
         profile_id = client.resolve_voice(self._base_url, wanted) or wanted
         result = client.generate(self._base_url, text, profile_id, self._engine, self._timeout_s)
@@ -148,6 +171,12 @@ def register(ctx):
     logger.debug("voicestudio plugin registered: TTS provider '%s'", provider.name)
 
     def _handle_command(raw_args: str) -> str:
+        """Slash command handler: /voicestudio [name|refresh]
+
+        - No args: show current voice and list available voices
+        - <name>: set voice by name (updates config.yaml)
+        - refresh: fetch voices from app and update plugin.yaml choices
+        """
         args = (raw_args or "").strip()
         base_url = ctx.get_config("base_url", default=client.DEFAULT_BASE_URL)
         if not args:
@@ -158,7 +187,7 @@ def register(ctx):
         if args.lower() == "refresh":
             voices = client.list_voices_cached(base_url, force=True)
             names = [v.get("display") or v.get("id") for v in voices]
-            # Update plugin.yaml choices
+            # Update plugin.yaml choices so the settings dropdown stays in sync
             try:
                 import yaml
                 from hermes_constants import get_hermes_home

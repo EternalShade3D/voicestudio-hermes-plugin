@@ -1,4 +1,27 @@
+name: voicestudio
+label: VoiceStudio TTS
+version: 1.0.0
+manifest_version: 2
 api_version: 1
+description: 'VoiceStudio TTS provider for Hermes: registers a plugin TTS provider
+  named ''voicestudio'' so base_url/voice/engine are settings values. Uses the app''s
+  deterministic POST /generate route (not /v1/audio/speech), lists the app''s Saved
+  voices through GET /profiles, and calls optional warm/release paths on the read-aloud
+  lease (no-op when unset). The ''voice'' field is an enum dropdown built from the
+  ''choices'' list below; edit choices when the app''s saved voices change (Hermes
+  does not auto-refresh plugin-setting option lists).
+
+  '
+author: EternalShade3D
+license: MIT
+homepage: https://github.com/EternalShade3D/voicestudio-hermes-plugin
+requires_hermes: '>=0.21'
+tags:
+- tts
+- voice
+- audio
+provides_tools: []
+provides_hooks: []
 config_schema:
   base_url:
     default: http://127.0.0.1:3900
@@ -50,25 +73,3 @@ config_schema:
       empty = no-op
     required: false
     type: str
-description: 'VoiceStudio TTS provider for Hermes: registers a plugin TTS provider
-  named ''voicestudio'' so base_url/voice/engine are settings values. Uses the app''s
-  deterministic POST /generate route (not /v1/audio/speech), lists the app''s Saved
-  voices through GET /profiles, and calls optional warm/release paths on the read-aloud
-  lease (no-op when unset). The ''voice'' field is an enum dropdown built from the
-  ''choices'' list below; edit choices when the app''s saved voices change (Hermes
-  does not auto-refresh plugin-setting option lists).
-
-  '
-license: MIT
-manifest_version: 2
-name: voicestudio
-requires_hermes: '>=0.21'
-tags:
-- tts
-- voice
-- audio
-version: 1.0.0
-author: EternalShade3D
-homepage: https://github.com/EternalShade3D/voicestudio-hermes-plugin
-provides_tools: []
-provides_hooks: []

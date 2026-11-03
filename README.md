@@ -12,8 +12,6 @@ VoiceStudio is a local text-to-speech app. This plugin connects it to Hermes Age
 **For:** Hermes users who want text-to-speech with custom voices from VoiceStudio.
 **Not for:** Users without VoiceStudio installed (requires the local app running on port 3900).
 
-> **Note:** The settings dropdown starts empty. Run `/voicestudio refresh` once after install to populate it with your VoiceStudio voices. You can also set a voice directly with `/voicestudio <name>`.
-
 ## Screenshot
 
 ![Plugin UI](assets/screenshot.png)
@@ -26,6 +24,12 @@ VoiceStudio is a local text-to-speech app. This plugin connects it to Hermes Age
 4. **Populate your voice dropdown:** open Hermes and run `/voicestudio refresh` — this fetches your VoiceStudio voices and fills the settings dropdown
 
 > **Note:** The `voice` field starts empty. After running `/voicestudio refresh`, your voices appear in the dropdown. You can also set a voice directly with `/voicestudio <name>`.
+
+## How to use
+
+After install, enable voice output in Hermes Desktop:
+- **Manual:** Click the "Read aloud" button below any bot reply
+- **Automatic:** Turn on "Read replies aloud" in settings to hear every reply spoken automatically
 
 ## Settings
 
@@ -46,7 +50,6 @@ VoiceStudio is a local text-to-speech app. This plugin connects it to Hermes Age
 | `/voicestudio <name>` | Set voice by name (resolved dynamically) |
 | `/voicestudio refresh` | Fetch voices from app and update the dropdown choices |
 
-- Hermes gives a plugin with a `config_schema` an automatic settings page. It does not build a voice dropdown from `list_voices()` — the desktop voice picker is ElevenLabs-only plus a static provider list. So you get fields (base_url, voice, engine, timeout), not a picker of the app's Saved voices.
 - A `tts.providers.<name>: type: command` entry in `config.yaml` wins over a plugin registration. Pick one: keep auto-speak with the bridge, or go plugin-only.
 
 ## License

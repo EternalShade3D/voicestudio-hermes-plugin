@@ -11,7 +11,7 @@ Plugin TTS provider named `voicestudio`, so the voice is a settings value instea
 
 ## Screenshot
 
-![Plugin UI](screenshot.png)
+![Plugin UI](assets/screenshot.png)
 
 ## Install
 

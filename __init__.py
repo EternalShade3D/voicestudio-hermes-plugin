@@ -187,6 +187,10 @@ def register(ctx):
         if args.lower() == "refresh":
             voices = client.list_voices_cached(base_url, force=True)
             names = [v.get("display") or v.get("id") for v in voices]
+            if not names:
+                # Never wipe an existing dropdown because the app happened to be closed.
+                return ("No voices returned from VoiceStudio (%s). Is the app running "
+                        "and does it have saved voices? Dropdown left unchanged." % base_url)
             # Update plugin.yaml choices so the settings dropdown stays in sync
             try:
                 import yaml

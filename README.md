@@ -18,16 +18,20 @@ Plugin TTS provider named `voicestudio`, so the voice is a settings value instea
 1. Copy the package to `~/.hermes/plugins/voicestudio/`
 2. `hermes plugins enable voicestudio`
 3. `hermes config set tts.provider voicestudio`
+4. **Populate your voice dropdown:** open Hermes and run `/voicestudio refresh` — this fetches your VoiceStudio voices and fills the settings dropdown
+
+> **Note:** The `voice` field starts empty. After running `/voicestudio refresh`, your voices appear in the dropdown. You can also set a voice directly with `/voicestudio <name>`.
 
 ## Settings
 
 | Key | Default | Meaning |
 |---|---|---|
 | `base_url` | `http://127.0.0.1:3900` | VoiceStudio app server |
-| `voice` | `74d7821c` | Voice id or name; names resolve via `/profiles` |
-| `engine` | empty | App's current engine when empty |
+| `voice` | (empty) | Voice name or ID; names resolve via `/profiles`. Run `/voicestudio refresh` to populate dropdown |
+| `engine` | (empty) | App's current engine when empty |
 | `timeout_s` | 180 | Read timeout for generation |
-| `warm_path` / `release_path` | empty | Called on the read-aloud lease on / release; empty = no-op |
+| `warm_path` / `release_path` | (empty) | Called on the read-aloud lease on / release; empty = no-op |
+| `debug` | false | Enable debug logging for voice resolution |
 
 ## Commands
 

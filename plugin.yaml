@@ -51,19 +51,7 @@ config_schema:
     required: false
     type: int
   voice:
-    choices:
-    - funny
-    - EternalMita_Funny_V1
-    - Mita_EN_CN_V1
-    - Russian Companion
-    - EternalMita_V4
-    - EternalMita_V3
-    - EternalMita_V2
-    - '4'
-    - '2'
-    - ref_en_o2_18s
-    - VoiceStudio Demo Voice
-    default: EternalMita_V3
+    default: ''
     description: Voice for synthesis (id or name; name resolved via /profiles)
     required: false
     type: str

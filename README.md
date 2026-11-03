@@ -7,14 +7,12 @@
 
 ![Banner](assets/banner.png)
 
-Plugin TTS provider named `voicestudio`, so the voice is a settings value instead of a hardcoded id in a script.
-
-## What is this
-
-VoiceStudio is a local TTS app. This plugin connects it to Hermes Agent so your agent can speak replies aloud using any voice you've created in VoiceStudio — no hardcoded IDs, no shell scripts. Pick a voice from a dropdown, change it anytime, and each bot profile gets its own voice.
+VoiceStudio is a local text-to-speech app. This plugin connects it to Hermes Agent so your bot can speak replies aloud using custom voices you create in VoiceStudio. No hardcoded voice IDs, no shell scripts. Each bot profile gets its own voice. Change it anytime from settings or with `/voicestudio <name>`.
 
 **For:** Hermes users who want text-to-speech with custom voices from VoiceStudio.
 **Not for:** Users without VoiceStudio installed (requires the local app running on port 3900).
+
+> **Note:** The settings dropdown starts empty. Run `/voicestudio refresh` once after install to populate it with your VoiceStudio voices. You can also set a voice directly with `/voicestudio <name>`.
 
 ## Screenshot
 

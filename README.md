@@ -27,7 +27,7 @@ Connect **VoiceStudio** to your **Hermes Agent** to enable realistic, custom loc
 
 [![How to install the VoiceStudio plugin in Hermes Desktop](assets/youtube_how_to_install_play.png)](https://youtu.be/qGd0liG_6vk)
 
-<a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.shields.io/badge/How_to_install-Hermes_Desktop-FF0000?style=for-the-badge&labelColor=26282e&logo=youtube&logoColor=white" alt="How to install the plugin in Hermes Desktop"></a>
+<a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.shields.io/badge/How_to_install-Hermes_Desktop-26282e?style=for-the-badge&labelColor=cc0000&logo=youtube&logoColor=white" alt="How to install the plugin in Hermes Desktop"></a>
 
 *Click above to watch the setup video.*
 

@@ -1,110 +1,148 @@
 # VoiceStudio Hermes plugin
 
+<div align="center">
+
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases/latest"><img src="https://img.shields.io/github/v/release/EternalShade3D/voicestudio-hermes-plugin?style=for-the-badge&labelColor=26282e&label=release&color=41CD52" alt="Latest release"></a>
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&labelColor=26282e" alt="License: MIT"></a>
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/github/stars/EternalShade3D/voicestudio-hermes-plugin?style=for-the-badge&labelColor=26282e&label=stars&color=41CD52" alt="Stars"></a>
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/badge/Hermes-Plugin-3776AB?style=for-the-badge&labelColor=26282e&logo=hermes&logoColor=white" alt="Hermes Plugin"></a>
-<a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.shields.io/badge/Watch-Video_Walkthrough-FF0000?style=for-the-badge&labelColor=26282e&logo=youtube&logoColor=white" alt="Watch the 1 minute 39 second walkthrough"></a>
 
 ![Banner](assets/banner.png)
 
-## Watch the walkthrough
-
-<a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.youtube.com/vi/qGd0liG_6vk/maxresdefault.jpg" alt="VoiceStudio Hermes plugin walkthrough" width="640"></a>
-
-1 minute 39 seconds, install through Hermes Desktop: Capabilities / Plugins, Install from Git, paste this repo URL, pick the profile, set VoiceStudio as the TTS provider, list your saved voices with `/voicestudio`, set one with `/voicestudio <name>`, then test a read aloud reply.
+</div>
 
 VoiceStudio is a local text-to-speech app. This plugin lets Hermes Agent speak its replies using **your own voices** from VoiceStudio.
 
-No hardcoded voice IDs. No shell scripts. One dropdown, built from the voices you already made in the app. Each bot profile can use a different voice.
+Connect **VoiceStudio** to your **Hermes Agent** to enable realistic, custom local text-to-speech for your bot responses without scripts or manual voice IDs.
 
-## Screenshot
+- **Voice by name:** Pick a voice you saved in VoiceStudio by name. Run `/voicestudio` to list them, `/voicestudio <name>` to set one. `/voicestudio refresh` writes those names into `plugin.yaml`, which is what turns the settings field into a list.
+- **Per-Profile Setup:** Give different Hermes profiles distinct voices.
+- **Zero Scripting Required:** Fully integrated UI configuration and commands.
+
+---
+
+## How to install the plugin in Hermes Desktop
+
+<div align="center">
+
+[![How to install the VoiceStudio plugin in Hermes Desktop](assets/youtube_how_to_install_play.png)](https://youtu.be/qGd0liG_6vk)
+
+<a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.shields.io/badge/How_to_install-Hermes_Desktop-FF0000?style=for-the-badge&labelColor=26282e&logo=youtube&logoColor=white" alt="How to install the plugin in Hermes Desktop"></a>
+
+*Click above to watch the setup video.*
+
+</div>
+
+### UI Overview
 
 ![Plugin UI](assets/screenshot.png)
 
-## Before you install
+---
 
-- [ ] VoiceStudio is installed and **open** on your machine
-- [ ] You have **at least one voice saved** in VoiceStudio
-- [ ] Hermes Agent 0.21 or newer
+## Prerequisites
 
-The plugin reads your voice list live from the running app, so if VoiceStudio is closed it has nothing to show.
+Ensure the following before installation:
 
-## Install
+- [x] **VoiceStudio** is running locally on your machine.
+- [x] You have at least **one custom voice** saved in VoiceStudio.
+- [x] **Hermes Agent** `v0.21` or newer.
 
-Pick your profile: `~/.hermes/plugins/` is the default profile. For another profile use `~/.hermes/profiles/<name>/plugins/`.
+> **Note:** The plugin queries VoiceStudio live over HTTP (`127.0.0.1:3900`). If VoiceStudio isn't running, available voices cannot be fetched.
 
-**1. Get the plugin into your plugins folder**
+---
 
-```bash
-git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git ~/.hermes/plugins/voicestudio
-```
+## Installation
 
-On Windows PowerShell:
+Choose your preferred installation method:
 
-```powershell
-git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git "$env:USERPROFILE\.hermes\plugins\voicestudio"
-```
+### Option A: Hermes Desktop (Recommended)
 
-No git? Download the ZIP, extract it, rename the folder to `voicestudio`, and move it into your `plugins/` folder.
+1. Open **Hermes Desktop**.
+2. Navigate to **Capabilities → Plugins → Install from Git**.
+3. Paste repo URL: `https://github.com/EternalShade3D/voicestudio-hermes-plugin.git`
+4. Select your target profile and confirm installation.
+5. Set **VoiceStudio** as your active TTS Provider in plugin settings.
 
-**2. Enable it**
+---
+
+### Option B: Command Line (CLI)
+
+#### 1. Clone into Plugins Folder
+Default profile path is `~/.hermes/plugins/`. For a custom profile, target `~/.hermes/profiles/<profile_name>/plugins/`.
+
+* **Linux / macOS:**
+  ```bash
+  git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git ~/.hermes/plugins/voicestudio
+  ```
+
+* **Windows (PowerShell):**
+  ```powershell
+  git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git "$env:USERPROFILE\.hermes\plugins\voicestudio"
+  ```
+
+* **Manual (No Git):** Download the `.zip` archive, extract contents to a folder named `voicestudio`, and place it inside your `plugins/` directory.
+
+#### 2. Enable & Select Provider
 
 ```bash
 hermes plugins enable voicestudio
-```
-
-**3. Make it the TTS provider**
-
-```bash
 hermes config set tts.provider voicestudio
 ```
 
-**4. Load your voices (VoiceStudio must be running)**
+---
 
-In Hermes:
+## Configuration & Usage
 
-```
-/voicestudio refresh
-```
-
-This fetches every voice in your VoiceStudio library and fills the plugin's dropdown. If it reports 0 voices, VoiceStudio is not running or has no saved voices yet.
-
-**5. Pick your voice**
-
-Open **Settings → Plugins → VoiceStudio** and choose a voice from the `voice` dropdown. Save.
+1. Ensure VoiceStudio is open.
+2. In Hermes, fetch your local voice library:
+   ```bash
+   /voicestudio refresh
+   ```
+3. Select your voice:
+   - **Via GUI:** Go to **Settings → Plugins → VoiceStudio** and use the **Voice** field. As shipped it is a text field you type; the list only appears after `/voicestudio refresh` writes `choices` into `plugin.yaml`.
+   - **Via Command:** Run `/voicestudio <voice_name>` directly.
 
 That's it. Your bot now speaks with the voice you picked.
 
-## How to use
+### Speech Options
+- **On-Demand:** Click **Read aloud** under any specific bot response.
+- **Continuous:** Enable **Read replies aloud** in the desktop app settings to auto-speak every response.
 
-- **One reply:** click **Read aloud** under any bot message
-- **Every reply:** turn on **Read replies aloud** in the desktop app
+Spoken audio is saved in the cache of the profile running the bot, `~/.hermes/profiles/<profile>/cache/audio`, or `$HERMES_HOME/cache/audio` when `HERMES_HOME` is set. Each bot keeps its own cache, so two bots do not share audio.
 
-Each Hermes profile has its own `voice` setting, so two bots can speak with two different voices.
+---
 
-## Settings
-
-| Key | Default | Meaning |
-|---|---|---|
-| `base_url` | `http://127.0.0.1:3900` | VoiceStudio app server. Change if your app listens elsewhere |
-| `voice` | (your pick) | Dropdown filled by `/voicestudio refresh` |
-| `engine` | (empty) | Engine name when the app needs one; empty uses the app's current engine |
-| `timeout_s` | 180 | Read timeout in seconds for generation |
-| `warm_path` / `release_path` | (empty) | Optional app path called when read-aloud starts / stops; empty = no-op |
-| `debug` | false | Verbose logging for voice resolution |
-
-## Commands
+## Commands Reference
 
 | Command | Description |
-|---|---|
-| `/voicestudio` | Show the current voice and list the voices found in the app |
-| `/voicestudio <name>` | Set the voice by name, without opening Settings |
-| `/voicestudio refresh` | Re-read the app's voices and update the dropdown (run this when you add a new voice in VoiceStudio) |
+| :--- | :--- |
+| `/voicestudio` | Displays current voice settings and available local voices. |
+| `/voicestudio <name>` | Quickly switches the active voice profile by name. |
+| `/voicestudio refresh` | Re-scans VoiceStudio and writes the voice names into `plugin.yaml`. Run this when you add a voice in the app. |
 
-> **Warning:** a `tts.providers.voicestudio: type: command` entry in `config.yaml` overrides this plugin. If you used the old command-bridge setup, remove it first:
-> `hermes config unset tts.providers.voicestudio`
+---
+
+## Settings Reference
+
+| Key | Default Value | Description |
+| :--- | :--- | :--- |
+| `base_url` | `http://127.0.0.1:3900` | Local API server endpoint for VoiceStudio. |
+| `voice` | *(User choice)* | Voice name you type. Becomes a list only after `/voicestudio refresh` writes `choices` into `plugin.yaml`. |
+| `engine` | *(Empty)* | Specific TTS engine override if required by your setup. |
+| `timeout_s` | `180` | Audio generation request timeout in seconds. |
+| `warm_path` / `release_path` | *(Empty)* | Optional hooks triggered before/after read-aloud requests. |
+| `debug` | `false` | Enables verbose debug logging for voice resolution. |
+
+---
+
+> [!WARNING]
+> If you previously configured an older command-bridge setup, remove the legacy override from your `config.yaml`:
+> ```bash
+> hermes config unset tts.providers.voicestudio
+> ```
+
+---
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).

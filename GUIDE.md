@@ -25,8 +25,8 @@ Release: https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases/ta
 2. Go to **Capabilities → Plugins → Install from Git**.
 3. Paste `https://github.com/EternalShade3D/voicestudio-hermes-plugin.git`.
 4. Select the target profile and confirm. Wait for Hermes to finish.
-5. In that profile settings, go to **Voice** and choose **VoiceStudio** as the TTS provider.
-6. With VoiceStudio open, run `/voicestudio` to list the saved voices, `/voicestudio <name>` to set one.
+5. Make it the active provider: **Settings → Voice → Text to speech → Text-To-Speech Provider → VoiceStudio**.
+6. With VoiceStudio open, run `/voicestudio refresh` so the plugin writes your saved voice names into the settings dropdown. Then pick one in **Capabilities → Plugins → VoiceStudio → Voice**, or run `/voicestudio <name>`.
 
 ### Per profile
 
@@ -125,6 +125,8 @@ The desktop app runs from a packaged `app.asar`. Source changes need a rebuild (
 Every generated reply is written to the cache of the profile that is running the bot: `cache/audio` inside that profile's Hermes home, `~/.hermes/profiles/<profile>/cache/audio`, or `$HERMES_HOME/cache/audio` when `HERMES_HOME` is set. Files are named `tts_<timestamp>` with the extension the app returns.
 
 Each profile keeps its own audio cache, so two bots with the plugin do not share audio. Nothing is written into the plugin folder.
+
+Retention: the cache is capped at **100 MB per profile** (`tts.keep_generated_audio_max_mb`). Past that, the oldest clips are deleted first. Set `tts.keep_generated_audio: false` to stop saving and go back to deleting each clip right after it plays.
 
 ## VoiceStudio server
 

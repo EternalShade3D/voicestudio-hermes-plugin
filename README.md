@@ -7,7 +7,7 @@
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/github/stars/EternalShade3D/voicestudio-hermes-plugin?style=for-the-badge&labelColor=26282e&label=stars&color=41CD52" alt="Stars"></a>
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/badge/Hermes-Plugin-3776AB?style=for-the-badge&labelColor=26282e&logo=hermes&logoColor=white" alt="Hermes Plugin"></a>
 
-![Banner](assets/banner.png)
+![VoiceStudio Hermes plugin banner](assets/voicestudio-hermes-plugin-banner.jpg)
 
 </div>
 
@@ -25,7 +25,7 @@ Connect **VoiceStudio** to your **Hermes Agent** to enable realistic, custom loc
 
 <div align="center">
 
-[![How to install the VoiceStudio plugin in Hermes Desktop](assets/youtube_how_to_install_play.png)](https://youtu.be/qGd0liG_6vk)
+[![How to install the VoiceStudio plugin in Hermes Desktop](assets/voicestudio-hermes-plugin-install-video-thumbnail.jpg)](https://youtu.be/qGd0liG_6vk)
 
 <a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.shields.io/badge/How_to_install-Hermes_Desktop-26282e?style=for-the-badge&labelColor=cc0000&logo=youtube&logoColor=white" alt="How to install the plugin in Hermes Desktop"></a>
 
@@ -35,7 +35,7 @@ Connect **VoiceStudio** to your **Hermes Agent** to enable realistic, custom loc
 
 ### UI Overview
 
-![Plugin UI](assets/screenshot.png)
+![VoiceStudio plugin settings panel in Hermes Desktop](assets/voicestudio-hermes-plugin-settings-panel.png)
 
 ---
 
@@ -61,7 +61,11 @@ Choose your preferred installation method:
 2. Navigate to **Capabilities → Plugins → Install from Git**.
 3. Paste repo URL: `https://github.com/EternalShade3D/voicestudio-hermes-plugin.git`
 4. Select your target profile and confirm installation.
-5. Set **VoiceStudio** as your active TTS Provider in plugin settings.
+5. Make it the active provider: **Settings → Voice → Text to speech → Text-To-Speech Provider → VoiceStudio**.
+6. Start **VoiceStudio**, then in any chat run `/voicestudio refresh` so the plugin reads your saved voices and writes the dropdown list.
+7. Pick your voice: **Capabilities → Plugins → VoiceStudio → Voice** dropdown, or run `/voicestudio <name>`.
+
+Plugin settings hold the advanced options (server URL, engine, timeout, cache retention). The provider picker lives in the Voice settings, not in the plugin panel.
 
 ---
 
@@ -99,8 +103,8 @@ hermes config set tts.provider voicestudio
    /voicestudio refresh
    ```
 3. Select your voice:
-   - **Via GUI:** Go to **Settings → Plugins → VoiceStudio** and use the **Voice** field. As shipped it is a text field you type; the list only appears after `/voicestudio refresh` writes `choices` into `plugin.yaml`.
-   - **Via Command:** Run `/voicestudio <voice_name>` directly.
+   - **Via GUI:** **Capabilities → Plugins → VoiceStudio → Voice**. Until `/voicestudio refresh` runs, this field is plain text; after it, your saved voices appear as a dropdown list.
+   - **Via Command:** run `/voicestudio <voice_name>` in chat.
 
 That's it. Your bot now speaks with the voice you picked.
 
@@ -109,6 +113,8 @@ That's it. Your bot now speaks with the voice you picked.
 - **Continuous:** Enable **Read replies aloud** in the desktop app settings to auto-speak every response.
 
 Spoken audio is saved in the cache of the profile running the bot, `~/.hermes/profiles/<profile>/cache/audio`, or `$HERMES_HOME/cache/audio` when `HERMES_HOME` is set. Each bot keeps its own cache, so two bots do not share audio.
+
+Retention defaults to **100 MB per profile**: when the cache grows past that, the oldest clips are deleted first. Change it with `tts.keep_generated_audio_max_mb`, or turn saving off entirely with `tts.keep_generated_audio: false` (audio is then deleted right after it plays).
 
 ---
 
@@ -127,11 +133,18 @@ Spoken audio is saved in the cache of the profile running the bot, `~/.hermes/pr
 | Key | Default Value | Description |
 | :--- | :--- | :--- |
 | `base_url` | `http://127.0.0.1:3900` | Local API server endpoint for VoiceStudio. |
-| `voice` | *(User choice)* | Voice name you type. Becomes a list only after `/voicestudio refresh` writes `choices` into `plugin.yaml`. |
+| `voice` | *(User choice)* | Voice name or ID. Plain text until `/voicestudio refresh` writes `choices` into `plugin.yaml`, then it renders as a dropdown. |
 | `engine` | *(Empty)* | Specific TTS engine override if required by your setup. |
 | `timeout_s` | `180` | Audio generation request timeout in seconds. |
 | `warm_path` / `release_path` | *(Empty)* | Optional hooks triggered before/after read-aloud requests. |
 | `debug` | `false` | Enables verbose debug logging for voice resolution. |
+
+### Audio cache (Hermes `tts.` settings)
+
+| Key | Default | Description |
+| :--- | :--- | :--- |
+| `keep_generated_audio` | `true` | Keep read-aloud audio in the profile cache instead of deleting it right after playback. |
+| `keep_generated_audio_max_mb` | `100` | Total cache size per profile. Oldest clips are pruned first. |
 
 ---
 

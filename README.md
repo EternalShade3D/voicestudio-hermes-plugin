@@ -4,8 +4,15 @@
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&labelColor=26282e" alt="License: MIT"></a>
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/github/stars/EternalShade3D/voicestudio-hermes-plugin?style=for-the-badge&labelColor=26282e&label=stars&color=41CD52" alt="Stars"></a>
 <a href="https://github.com/EternalShade3D/voicestudio-hermes-plugin"><img src="https://img.shields.io/badge/Hermes-Plugin-3776AB?style=for-the-badge&labelColor=26282e&logo=hermes&logoColor=white" alt="Hermes Plugin"></a>
+<a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.shields.io/badge/Watch-Video_Walkthrough-FF0000?style=for-the-badge&labelColor=26282e&logo=youtube&logoColor=white" alt="Watch the 1 minute 39 second walkthrough"></a>
 
 ![Banner](assets/banner.png)
+
+## Watch the walkthrough
+
+<a href="https://youtu.be/qGd0liG_6vk"><img src="https://img.youtube.com/vi/qGd0liG_6vk/maxresdefault.jpg" alt="VoiceStudio Hermes plugin walkthrough" width="640"></a>
+
+1 minute 39 seconds, install through Hermes Desktop: Capabilities / Plugins, Install from Git, paste this repo URL, pick the profile, set VoiceStudio as the TTS provider, list your saved voices with `/voicestudio`, set one with `/voicestudio <name>`, then test a read aloud reply.
 
 VoiceStudio is a local text-to-speech app. This plugin lets Hermes Agent speak its replies using **your own voices** from VoiceStudio.
 

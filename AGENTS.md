@@ -29,6 +29,6 @@ Auto-loaded by Hermes when operating in this plugin directory.
 
 Run from a Hermes profile:
 ```
-hermes plugins enable voicestudio --profile <profile>
-hermes config set tts.provider voicestudio --profile <profile>
+hermes plugins enable voicestudio-tts --profile <profile>
+hermes config set tts.provider voicestudio-tts --profile <profile>
 ```

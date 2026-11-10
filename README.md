@@ -15,6 +15,8 @@ VoiceStudio is a local text-to-speech app. This plugin lets Hermes Agent speak i
 
 Connect **VoiceStudio** to your **Hermes Agent** to enable realistic, custom local text-to-speech for your bot responses without scripts or manual voice IDs.
 
+> **Why `voicestudio-tts`?** The plain `voicestudio` plugin id belongs to a different project, a tool client for the same VoiceStudio app. This one registers a Hermes TTS provider, so it ships under its own id and the two can live side by side.
+
 - **Voice by name:** Pick a voice you saved in VoiceStudio by name. Run `/voicestudio` to list them, `/voicestudio <name>` to set one. `/voicestudio refresh` writes those names into `plugin.yaml`, which is what turns the settings field into a list.
 - **Per-Profile Setup:** Give different Hermes profiles distinct voices.
 - **Zero Scripting Required:** Fully integrated UI configuration and commands.
@@ -76,21 +78,21 @@ Default profile path is `~/.hermes/plugins/`. For a custom profile, target `~/.h
 
 * **Linux / macOS:**
   ```bash
-  git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git ~/.hermes/plugins/voicestudio
+  git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git ~/.hermes/plugins/voicestudio-tts
   ```
 
 * **Windows (PowerShell):**
   ```powershell
-  git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git "$env:USERPROFILE\.hermes\plugins\voicestudio"
+  git clone https://github.com/EternalShade3D/voicestudio-hermes-plugin.git "$env:USERPROFILE\.hermes\plugins\voicestudio-tts"
   ```
 
-* **Manual (No Git):** Download the `.zip` archive, extract contents to a folder named `voicestudio`, and place it inside your `plugins/` directory.
+* **Manual (No Git):** Download the `.zip` archive, extract contents to a folder named `voicestudio-tts`, and place it inside your `plugins/` directory.
 
 #### 2. Enable & Select Provider
 
 ```bash
-hermes plugins enable voicestudio
-hermes config set tts.provider voicestudio
+hermes plugins enable voicestudio-tts
+hermes config set tts.provider voicestudio-tts
 ```
 
 ---

@@ -19,8 +19,12 @@ from . import client
 
 logger = logging.getLogger(__name__)
 
-# Plugin identifier used for registration and config lookup.
-_PLUGIN = "voicestudio"
+# Plugin identifier used for registration and config lookup. The catalog id is
+# `voicestudio-tts`: the plain `voicestudio` name belongs to a different plugin (a tool
+# client for the same app), so this one cannot reuse it.
+_PLUGIN = "voicestudio-tts"
+# Pre-rename id, kept so settings written by an older install still resolve.
+_PLUGIN_LEGACY = "voicestudio"
 
 
 class VoiceStudioProvider(TTSProvider):
@@ -103,7 +107,8 @@ class VoiceStudioProvider(TTSProvider):
                 config = yaml.safe_load(fh) or {}
             plugins = config.get("plugins", {}) or {}
             entries = plugins.get("entries", {}) or {}
-            vs = entries.get("voicestudio", {}) or {}
+            # New id first; fall back to the pre-rename id so an existing install keeps its voice.
+            vs = entries.get(_PLUGIN, {}) or entries.get(_PLUGIN_LEGACY, {}) or {}
             settings = vs.get("settings", {}) or {}
             voice = str(settings.get("voice", "") or "").strip()
             if self._debug():
@@ -190,11 +195,13 @@ def register(ctx):
                 # Never wipe an existing dropdown because the app happened to be closed.
                 return ("No voices returned from VoiceStudio (%s). Is the app running "
                         "and does it have saved voices? Dropdown left unchanged." % base_url)
-            # Update plugin.yaml choices so the settings dropdown stays in sync
+            # Update this plugin's own manifest so the settings dropdown stays in sync. The path is
+            # derived from the loaded module, never a hardcoded install dir, so a rename or a
+            # different profile layout cannot write outside the plugin.
             try:
                 import yaml
-                from hermes_constants import get_hermes_home
-                plugin_path = get_hermes_home() / "plugins" / "voicestudio" / "plugin.yaml"
+                from pathlib import Path
+                plugin_path = Path(__file__).resolve().parent / "plugin.yaml"
                 with open(plugin_path, "r", encoding="utf-8") as fh:
                     data = yaml.safe_load(fh) or {}
                 schema = data.get("config_schema", {}) or {}
@@ -207,20 +214,10 @@ def register(ctx):
                 return "Refreshed %d voices: %s" % (len(names), ", ".join(names))
             except Exception as e:
                 return "Fetched %d voices but failed to update plugin.yaml: %s" % (len(names), e)
-        # Treat as voice name
+        # Treat as voice name. ctx.set_config writes only this plugin's settings subtree, atomically;
+        # rewriting config.yaml by hand would drop the user's comments and formatting.
         try:
-            import yaml
-            from hermes_constants import get_hermes_home
-            config_path = get_hermes_home() / "config.yaml"
-            with open(config_path, "r", encoding="utf-8") as fh:
-                config = yaml.safe_load(fh) or {}
-            plugins = config.setdefault("plugins", {})
-            entries = plugins.setdefault("entries", {})
-            vs = entries.setdefault("voicestudio", {})
-            settings = vs.setdefault("settings", {})
-            settings["voice"] = args
-            with open(config_path, "w", encoding="utf-8") as fh:
-                yaml.safe_dump(config, fh, default_flow_style=False, allow_unicode=True)
+            ctx.set_config("voice", args)
             return "Voice set to: %s" % args
         except Exception as e:
             return "Failed to set voice: %s" % e

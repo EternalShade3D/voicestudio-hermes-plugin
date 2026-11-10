@@ -31,11 +31,11 @@ Release: https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases/ta
 ### Per profile
 
 ```bash
-cp -r /path/to/voicestudio ~/.hermes/profiles/<profile>/plugins/voicestudio
-hermes plugins enable voicestudio --profile <profile>
-hermes config set tts.provider voicestudio --profile <profile>
+cp -r /path/to/voicestudio ~/.hermes/profiles/<profile>/plugins/voicestudio-tts
+hermes plugins enable voicestudio-tts --profile <profile>
+hermes config set tts.provider voicestudio-tts --profile <profile>
 hermes config unset tts.providers.voicestudio --profile <profile>  # remove old command bridge
-hermes config set plugins.entries.voicestudio.settings.voice "VoiceName" --profile <profile>
+hermes config set plugins.entries.voicestudio-tts.settings.voice "VoiceName" --profile <profile>
 ```
 
 ### From GitHub
@@ -46,7 +46,7 @@ hermes plugins install EternalShade3D/voicestudio-hermes-plugin
 
 ## Configuration
 
-Settings are stored in `config.yaml` under `plugins.entries.voicestudio.settings`:
+Settings are stored in `config.yaml` under `plugins.entries.voicestudio-tts.settings`:
 
 | Key | Default | Description |
 |---|---|---|
@@ -89,7 +89,7 @@ Settings are stored in `config.yaml` under `plugins.entries.voicestudio.settings
 
 ### Per-profile voice isolation
 
-Each Hermes profile has its own `config.yaml` with its own `plugins.entries.voicestudio.settings.voice`. The plugin reads from the profile-scoped home at runtime, so:
+Each Hermes profile has its own `config.yaml` with its own `plugins.entries.voicestudio-tts.settings.voice`. The plugin reads from the profile-scoped home at runtime, so:
 
 - eternalmita bot → uses eternalmita's configured voice
 - flash bot → uses flash's configured voice

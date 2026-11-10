@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
+
+- **Renamed the plugin to `voicestudio-tts`.** The id `voicestudio` belongs to a different plugin (a tool client for the same VoiceStudio app) already listed in the Hermes catalog, so the two cannot share a name. Provider setting is now `tts.provider: voicestudio-tts`; the old `plugins.entries.voicestudio` settings are still read as a fallback.
+- `/voicestudio <name>` now writes through `ctx.set_config` instead of rewriting `config.yaml` by hand, so user comments and formatting survive.
+- `/voicestudio refresh` locates its own `plugin.yaml` from the loaded module instead of a hardcoded install path, so a renamed or differently-laid-out install still updates the right file.
+- Removed an unused private core import (`agent.provider_base.CatalogProviderBase`); catalog validation is now warning-free.
 
 - README/GUIDE: desktop setup corrected to **Settings → Voice → Text to speech → Text-To-Speech Provider → VoiceStudio**, with `/voicestudio refresh` and voice pick as explicit steps
 - README/GUIDE: audio retention documented (`tts.keep_generated_audio`, `tts.keep_generated_audio_max_mb`, 100 MB cap, oldest pruned first)

@@ -1,14 +1,15 @@
 """VoiceStudio Hermes plugin - registers a plugin TTS provider.
 
-Provider name is 'voicestudio' (not a built-in, so it is accepted by the TTS
-registry). Set it with:
+Plugin id and provider name are 'voicestudio-tts'. The bare 'voicestudio' id is
+already taken by a different catalog plugin (a tool client for the same app), so
+this one must not reuse it. Set it with:
 
-    hermes config set tts.provider voicestudio
+    hermes config set tts.provider voicestudio-tts
 
 Precedence note from upstream: a `tts.providers.<name>: type: command` entry in
-config.yaml wins over a plugin registration, so if the old command bridge keeps
-the name 'voicestudio' this plugin will not be used for dispatch. Use a different
-provider name for the bridge, or drop the bridge entry.
+config.yaml wins over a plugin registration, so if an old command bridge keeps
+the name 'voicestudio' this plugin will not be used for dispatch. Remove the
+bridge entry (`hermes config unset tts.providers.voicestudio`).
 """
 import logging
 from typing import Any, Optional
@@ -87,7 +88,8 @@ class VoiceStudioProvider(TTSProvider):
             config_path = get_hermes_home() / "config.yaml"
             with open(config_path, "r", encoding="utf-8") as fh:
                 config = yaml.safe_load(fh) or {}
-            settings = (config.get("plugins", {}) or {}).get("entries", {}).get("voicestudio", {}).get("settings", {}) or {}
+            entries = (config.get("plugins", {}) or {}).get("entries", {}) or {}
+            settings = (entries.get(_PLUGIN) or entries.get(_PLUGIN_LEGACY) or {}).get("settings", {}) or {}
             return bool(settings.get("debug", False))
         except Exception:
             return False

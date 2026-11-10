@@ -13,7 +13,6 @@ provider name for the bridge, or drop the bridge entry.
 import logging
 from typing import Any, Optional
 
-from agent.provider_base import CatalogProviderBase
 from agent.tts_provider import DEFAULT_OUTPUT_FORMAT, TTSProvider
 
 from . import client

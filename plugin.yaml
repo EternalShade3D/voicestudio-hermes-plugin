@@ -13,8 +13,6 @@ description: 'VoiceStudio TTS provider for Hermes: registers a TTS provider so r
 author: EternalShade3D
 license: MIT
 homepage: https://github.com/EternalShade3D/voicestudio-hermes-plugin
-python_dependencies:
-  - "PyYAML>=6,<7"
 requires_hermes: '>=0.21'
 tags:
 - tts

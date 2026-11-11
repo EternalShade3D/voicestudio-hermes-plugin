@@ -127,6 +127,7 @@ class VoiceStudioProvider(TTSProvider):
         # misreads the file. Coerce the extension to the real format.
         if client.looks_like_wav(body) and not output_path.lower().endswith(".wav"):
             output_path = output_path.rsplit(".", 1)[0] + ".wav"
+        output_path = _free_path(output_path)  # never replace a file that already exists
         with open(output_path, "wb") as fh:
             fh.write(body)
         return output_path
@@ -141,6 +142,22 @@ class VoiceStudioProvider(TTSProvider):
         path = str(self._setting("release_path", self._release_path) or "").strip()
         if path:
             client.api_get(self._base(), path, timeout=client.PROBE_TIMEOUT_S)
+
+
+def _free_path(path: str) -> str:
+    """Return a path that is not already taken, so writing can never replace a user's file.
+
+    Hermes names audio files by timestamp, so a clash is unlikely, not impossible; when it happens
+    the second file gets a numeric suffix instead of silently overwriting the first.
+    """
+    if not os.path.exists(path):
+        return path
+    stem, ext = os.path.splitext(path)
+    for index in range(1, 101):
+        candidate = "%s_%d%s" % (stem, index, ext)
+        if not os.path.exists(candidate):
+            return candidate
+    return path
 
 
 def _stored_voices(ctx) -> list:
@@ -163,14 +180,13 @@ def _sync_dropdown(ctx) -> bool:
 def _write_dropdown_choices(names: list) -> None:
     """Copy the voice names into this plugin's manifest, which is what paints the settings dropdown.
 
-    Uses ``PyYAML``, declared in ``plugin.yaml`` as ``python_dependencies`` and in
-    ``pyproject.toml``, so the import is a normal published dependency rather than a private core
-    module. The path comes from the loaded module, never a hardcoded install dir, and the write goes
-    through a temp file so an interrupted save cannot truncate the manifest.
+    Uses ``hermes_yaml``, the YAML module Hermes itself ships, so the plugin declares no extra
+    dependency. The path comes from the loaded module, never a hardcoded install dir, and the write
+    goes through a temp file so an interrupted save cannot truncate the manifest.
     """
     from pathlib import Path
 
-    from yaml import safe_dump, safe_load  # declared: PyYAML>=6,<7
+    from hermes_yaml import safe_dump, safe_load  # the YAML module Hermes ships
 
     plugin_path = Path(__file__).resolve().parent / "plugin.yaml"
     with open(plugin_path, "r", encoding="utf-8") as fh:

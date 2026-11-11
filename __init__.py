@@ -85,10 +85,14 @@ class VoiceStudioProvider(TTSProvider):
 
         Resolution order:
         1. the current ``voice`` setting (name or id)
-        2. the value captured at registration, which may be stale
+        2. the value captured at registration, only when no context is available
         3. the first voice the app reports
         """
-        voice = str(self._setting("voice", "") or self._voice or "").strip()
+        if self._ctx is not None:
+            # A cleared setting means "pick the first one", not "reuse the old value".
+            voice = str(self._setting("voice", "") or "").strip()
+        else:
+            voice = str(self._voice or "").strip()
         if voice:
             return client.resolve_voice(self._base(), voice) or voice
         voices = self.list_voices()

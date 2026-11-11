@@ -26,7 +26,7 @@ Release: https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases/ta
 3. Paste `https://github.com/EternalShade3D/voicestudio-hermes-plugin.git`.
 4. Select the target profile and confirm. Wait for Hermes to finish.
 5. Make it the active provider: **Settings → Voice → Text to speech → Text-To-Speech Provider → VoiceStudio**.
-6. With VoiceStudio open, run `/voicestudio refresh` so the plugin writes your saved voice names into the settings dropdown. Then pick one in **Capabilities → Plugins → VoiceStudio → Voice**, or run `/voicestudio <name>`.
+6. With VoiceStudio open, run `/voicestudio refresh` to load your saved voice names. Pick one with `/voicestudio <name>`, or turn on `sync_dropdown` in the plugin settings and refresh again to get a clickable list in **Capabilities → Plugins → VoiceStudio → Voice**.
 
 ### Per profile
 

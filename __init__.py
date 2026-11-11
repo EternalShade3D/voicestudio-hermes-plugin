@@ -63,6 +63,10 @@ class VoiceStudioProvider(TTSProvider):
         """Must not raise and must not make network calls - the picker calls this on every paint."""
         return bool(self._base_url)
 
+    def _base(self) -> str:
+        """The server URL from the live settings, so a change applies without a restart."""
+        return client.normalize_base_url(str(self._setting("base_url", self._base_url) or self._base_url))
+
     def _setting(self, key: str, default: Any = None) -> Any:
         """Live read of one plugin setting through the host context."""
         if self._ctx is not None:
@@ -74,7 +78,7 @@ class VoiceStudioProvider(TTSProvider):
 
     # ---- voice catalog (powers the settings dropdown) ----
     def list_voices(self) -> list[dict[str, Any]]:
-        return client.list_voices_cached(self._base_url)
+        return client.list_voices_cached(self._base())
 
     def default_voice(self) -> Optional[str]:
         """Always an id: reads the live setting so a change applies without a restart.
@@ -86,7 +90,7 @@ class VoiceStudioProvider(TTSProvider):
         """
         voice = str(self._setting("voice", "") or self._voice or "").strip()
         if voice:
-            return client.resolve_voice(self._base_url, voice) or voice
+            return client.resolve_voice(self._base(), voice) or voice
         voices = self.list_voices()
         return voices[0]["id"] if voices else None
 
@@ -103,13 +107,14 @@ class VoiceStudioProvider(TTSProvider):
         self.default_voice() which reads from config dynamically. This prevents
         the TTS system from overriding the configured voice.
         """
+        base = self._base()  # read once, reused for the whole request
         wanted = self.default_voice()
-        profile_id = client.resolve_voice(self._base_url, wanted) or wanted
-        result = client.generate(self._base_url, text, profile_id, self._engine, self._timeout_s)
+        profile_id = client.resolve_voice(base, wanted) or wanted
+        result = client.generate(base, text, profile_id, self._engine, self._timeout_s)
         if result.get("status") != 200:
             # One short, actionable sentence instead of the app's JSON paragraph.
             raise RuntimeError(client.describe_failure(
-                result, self._base_url, self._timeout_s, voice=profile_id or ""))
+                result, base, self._timeout_s, voice=profile_id or ""))
         body = result.get("body") or b""
         if isinstance(body, str):
             body = body.encode("utf-8")
@@ -128,12 +133,12 @@ class VoiceStudioProvider(TTSProvider):
     def warm(self) -> None:
         if not self._warm_path:
             return
-        client.api_get(self._base_url, self._warm_path, timeout=client.PROBE_TIMEOUT_S)
+        client.api_get(self._base(), self._warm_path, timeout=client.PROBE_TIMEOUT_S)
 
     def release(self) -> None:
         if not self._release_path:
             return
-        client.api_get(self._base_url, self._release_path, timeout=client.PROBE_TIMEOUT_S)
+        client.api_get(self._base(), self._release_path, timeout=client.PROBE_TIMEOUT_S)
 
 
 def _stored_voices(ctx) -> list:

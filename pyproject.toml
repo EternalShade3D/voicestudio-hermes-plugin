@@ -4,6 +4,7 @@ version = "1.2.0"
 description = "VoiceStudio TTS provider for Hermes Agent"
 license = {text = "MIT"}
 requires-python = ">=3.10"
+dependencies = ["PyYAML>=6,<7"]
 
 [project.urls]
 Homepage = "https://github.com/EternalShade3D/voicestudio-hermes-plugin"

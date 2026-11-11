@@ -4,16 +4,20 @@
 
 - **Settings are read through `ctx.get_config`**, not by opening `config.yaml`: the provider keeps
   the plugin context, so a voice change applies live and the plugin needs no direct file access.
-- **No PyYAML.** It was used but never declared, and Hermes does not ship it, so on a stock install
-  live voice changes fell back to the stale value and `/voicestudio refresh` failed with
-  `No module named 'yaml'`. Settings are now read with `ctx.get_config`, and the manifest is written
-  with `hermes_yaml`, the YAML module Hermes ships, so the plugin adds no dependency.
+- **PyYAML is now declared.** It was used but never declared, and Hermes does not ship it, so on a
+  stock install live voice changes fell back to the stale value and `/voicestudio refresh` failed
+  with `No module named 'yaml'`. Settings are read through `ctx.get_config`, and the manifest write
+  uses `PyYAML>=6,<7`, declared in `plugin.yaml` and `pyproject.toml`, so the import is a normal
+  published dependency instead of a private core module.
 - **`/voicestudio refresh` saves the voice list first**, then mirrors it into `plugin.yaml` when
   `sync_dropdown` is on. A failed manifest write no longer loses the list, and an empty app response
   never wipes a known one. The write goes through a temp file and keeps the file's own key order.
 - **New `sync_dropdown` setting** (default `false`). Off: the installed folder is never modified and
   voices are picked with `/voicestudio <name>`. On: the names are written into `plugin.yaml` so
   Settings shows a voice list, at the cost of the installed folder showing as changed.
+- **Every setting is read live**: `base_url`, `engine`, `timeout_s`, `warm_path` and
+  `release_path` come from `ctx.get_config` at the moment they are used, so editing them applies
+  without a gateway restart.
 - `/voicestudio` with no arguments falls back to the stored list when the app is closed.
 - The voice setting is now read from `plugins.entries.voicestudio-tts` only. An install left on the
   pre-rename `voicestudio` entry keeps working after one pick (Settings or `/voicestudio <name>`), since

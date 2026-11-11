@@ -110,11 +110,13 @@ class VoiceStudioProvider(TTSProvider):
         base = self._base()  # read once, reused for the whole request
         wanted = self.default_voice()
         profile_id = client.resolve_voice(base, wanted) or wanted
-        result = client.generate(base, text, profile_id, self._engine, self._timeout_s)
+        engine = str(self._setting("engine", self._engine) or "").strip()
+        timeout_s = int(self._setting("timeout_s", self._timeout_s) or client.DEFAULT_READ_TIMEOUT_S)
+        result = client.generate(base, text, profile_id, engine, timeout_s)
         if result.get("status") != 200:
             # One short, actionable sentence instead of the app's JSON paragraph.
             raise RuntimeError(client.describe_failure(
-                result, base, self._timeout_s, voice=profile_id or ""))
+                result, base, timeout_s, voice=profile_id or ""))
         body = result.get("body") or b""
         if isinstance(body, str):
             body = body.encode("utf-8")
@@ -131,14 +133,14 @@ class VoiceStudioProvider(TTSProvider):
 
     # ---- lease hooks (read-aloud on / last lease released) ----
     def warm(self) -> None:
-        if not self._warm_path:
-            return
-        client.api_get(self._base(), self._warm_path, timeout=client.PROBE_TIMEOUT_S)
+        path = str(self._setting("warm_path", self._warm_path) or "").strip()
+        if path:
+            client.api_get(self._base(), path, timeout=client.PROBE_TIMEOUT_S)
 
     def release(self) -> None:
-        if not self._release_path:
-            return
-        client.api_get(self._base(), self._release_path, timeout=client.PROBE_TIMEOUT_S)
+        path = str(self._setting("release_path", self._release_path) or "").strip()
+        if path:
+            client.api_get(self._base(), path, timeout=client.PROBE_TIMEOUT_S)
 
 
 def _stored_voices(ctx) -> list:
@@ -161,13 +163,14 @@ def _sync_dropdown(ctx) -> bool:
 def _write_dropdown_choices(names: list) -> None:
     """Copy the voice names into this plugin's manifest, which is what paints the settings dropdown.
 
-    Uses ``hermes_yaml``, the YAML module Hermes itself ships, so the plugin needs no extra
-    dependency. The path comes from the loaded module, never a hardcoded install dir, and the
-    write goes through a temp file so an interrupted save cannot truncate the manifest.
+    Uses ``PyYAML``, declared in ``plugin.yaml`` as ``python_dependencies`` and in
+    ``pyproject.toml``, so the import is a normal published dependency rather than a private core
+    module. The path comes from the loaded module, never a hardcoded install dir, and the write goes
+    through a temp file so an interrupted save cannot truncate the manifest.
     """
     from pathlib import Path
 
-    from hermes_yaml import safe_dump, safe_load
+    from yaml import safe_dump, safe_load  # declared: PyYAML>=6,<7
 
     plugin_path = Path(__file__).resolve().parent / "plugin.yaml"
     with open(plugin_path, "r", encoding="utf-8") as fh:

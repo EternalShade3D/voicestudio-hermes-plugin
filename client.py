@@ -58,6 +58,38 @@ def api_get(base_url, path, timeout=PROBE_TIMEOUT_S):
         return {"error": str(e), "kind": type(e).__name__}
 
 
+def describe_failure(result, base_url="", timeout=None, voice=""):
+    """One short sentence a person can act on, for an envelope from api_get/api_post_form.
+
+    The app's own 500 body is a JSON paragraph of advice; pasting it into a toast is useless.
+    """
+    kind = str(result.get("kind") or "")
+    err = str(result.get("error") or "")
+    status = result.get("status")
+    body = _decode(result.get("body") or b"") if result.get("body") else ""
+    low = body.lower()
+
+    if not status:
+        if "timed out" in err.lower() or kind == "TimeoutError":
+            return ("VoiceStudio did not answer in time%s. It may still be loading a voice; "
+                    "increase the timeout or try again."
+                    % (" (%ss)" % timeout if timeout else ""))
+        return ("VoiceStudio is not running, or not reachable at %s. Open VoiceStudio and try again."
+                % (normalize_base_url(base_url) or "the configured address"))
+
+    if status == 500 and ("gpu" in low or "oom" in low or "out of memory" in low):
+        return ("VoiceStudio ran out of graphics memory. Try freeing VRAM and closing heavy "
+                "apps, or change VoiceStudio Settings.")
+    if status == 500 and ("model" in low and "load" in low):
+        return "VoiceStudio could not load the voice model. Try again, or pick a smaller engine in the app."
+    if status == 404:
+        return ("VoiceStudio did not recognize the voice: %s. Run /voicestudio refresh, "
+                "then pick a valid voice." % (voice or "you selected"))
+    if status >= 500:
+        return "VoiceStudio reported an internal error (HTTP %s). Check its own log or restart it." % status
+    return "VoiceStudio refused the request (HTTP %s)." % status
+
+
 def api_post_form(base_url, path, fields, timeout=DEFAULT_READ_TIMEOUT_S):
     """POST application/x-www-form-urlencoded; returns the same envelope shape. Never raises."""
     url = normalize_base_url(base_url) + path
@@ -89,17 +121,24 @@ def looks_like_wav(body):
     return isinstance(body, (bytes, bytearray)) and body[:4] == b"RIFF" and body[8:12] == b"WAVE"
 
 
-def list_profiles(base_url, timeout=PROBE_TIMEOUT_S):
-    """Saved voices from GET /profiles. Returns [] on any failure."""
+def _fetch_profiles(base_url, timeout=PROBE_TIMEOUT_S):
+    """Fetch saved voices; return [] for a valid empty result and None on request/parse failure."""
     r = api_get(base_url, PROFILES_PATH, timeout=timeout)
     if r.get("status") != 200:
-        return []
+        return None
     try:
         payload = json.loads(_decode(r.get("body") or b""))
     except Exception:
-        return []
+        return None
     items = payload.get("profiles") if isinstance(payload, dict) else payload
-    return [p for p in (items or []) if isinstance(p, dict) and p.get("id")]
+    if not isinstance(items, list):
+        return None
+    return [p for p in items if isinstance(p, dict) and p.get("id")]
+
+
+def list_profiles(base_url, timeout=PROBE_TIMEOUT_S):
+    """Saved voices from GET /profiles. Returns [] on any failure."""
+    return _fetch_profiles(base_url, timeout=timeout) or []
 
 
 def _gender(profile):
@@ -120,14 +159,19 @@ def list_voices_cached(base_url, ttl=_VOICES_TTL_S, force=False):
     key = normalize_base_url(base_url)
     now = time.time()
     cache = _voices_cache
-    if not force and cache["key"] == key and (now - cache["at"]) < ttl and cache["voices"]:
+    if not force and cache["key"] == key and (now - cache["at"]) < ttl:
         return cache["voices"]
+    profiles = _fetch_profiles(base_url)
+    if profiles is None:
+        # A forced refresh must report failure instead of presenting the stale cache as fresh.
+        if force:
+            return []
+        return cache["voices"] if cache["key"] == key else []
     voices = [{"id": p["id"], "display": p.get("name") or p["id"],
                "language": p.get("language") or "",
-               "gender": _gender(p)} for p in list_profiles(base_url)]
-    if voices:
-        cache.update({"key": key, "at": now, "voices": voices})
-    return cache["voices"] if cache["key"] == key else voices
+               "gender": _gender(p)} for p in profiles]
+    cache.update({"key": key, "at": now, "voices": voices})
+    return voices
 
 
 def resolve_voice(base_url, name, timeout=PROBE_TIMEOUT_S):

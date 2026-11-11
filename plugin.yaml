@@ -1,13 +1,14 @@
 name: voicestudio-tts
 label: VoiceStudio TTS
-version: 1.1.0
+version: 1.2.0
 manifest_version: 2
 api_version: 1
 description: 'VoiceStudio TTS provider for Hermes: registers a TTS provider so replies
   can be read aloud with your own local VoiceStudio voices, per profile. Uses the
-  app''s POST /generate route and lists saved voices through GET /profiles; the voice
-  setting is plain text until /voicestudio refresh writes the choices list, which
-  turns it into a dropdown. Optional warm/release paths fire on the read-aloud lease.
+  app''s POST /generate route and lists saved voices through GET /profiles; /voicestudio
+  refresh stores names in plugin state by default. The voice setting is plain text
+  unless sync_dropdown is enabled and refresh writes choices for a Settings dropdown.
+  Optional warm/release paths fire on the read-aloud lease.
   Sends only reply text to the configured local server (default http://127.0.0.1:3900);
   no credentials, no telemetry, no self-update.'
 author: EternalShade3D
@@ -43,6 +44,16 @@ config_schema:
       empty = no-op
     required: false
     type: str
+  sync_dropdown:
+    default: false
+    label: Voice list in Settings
+    description: 'On: your VoiceStudio voices appear in the voice list in Settings,
+      so you pick one with the mouse. The plugin then rewrites its own plugin.yaml,
+      so the installed folder shows as changed and an update may have to merge that
+      edit. Off (default): the installed folder is never touched and you choose a
+      voice with /voicestudio <name>.'
+    required: false
+    type: bool
   timeout_s:
     default: 180
     description: Read timeout in seconds for generation calls

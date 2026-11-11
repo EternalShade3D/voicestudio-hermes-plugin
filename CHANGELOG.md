@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.2.0
+
+- **Settings are read through `ctx.get_config`**, not by opening `config.yaml`: the provider keeps
+  the plugin context, so a voice change applies live and the plugin needs no direct file access.
+- **No undeclared YAML import.** The old implementation imported PyYAML without declaring it, so
+  `/voicestudio refresh` failed on stock installs. The manifest update now uses the maintainer-approved
+  `hermes_yaml.safe_load/safe_dump`; settings are read through `ctx.get_config` and no direct config
+  file access is needed.
+- **`/voicestudio refresh` saves the voice list first**, then mirrors it into `plugin.yaml` when
+  `sync_dropdown` is on. A failed manifest write no longer loses the list, and an empty app response
+  never wipes saved plugin state. Refresh distinguishes a valid empty profile list from a failed
+  request, so it reports zero voices instead of reusing a stale cached list. The write goes through a
+  temp file and keeps the file's own key order.
+- **New `sync_dropdown` setting** (default `false`). Off: the installed folder is never modified and
+  voices are picked with `/voicestudio <name>`. On: the names are written into `plugin.yaml` so
+  Settings shows a voice list, at the cost of the installed folder showing as changed.
+- **Every setting is read live**: `base_url`, `engine`, `timeout_s`, `warm_path` and
+  `release_path` come from `ctx.get_config` at the moment they are used, so editing them applies
+  without a gateway restart.
+- **Audio files are never replaced.** If the generated name is already taken, the file gets a
+  numeric suffix instead of overwriting the existing one.
+- `/voicestudio` with no arguments falls back to the stored list when the app is closed.
+- The voice setting is now read from `plugins.entries.voicestudio-tts` only. An install left on the
+  pre-rename `voicestudio` entry keeps working after one pick (Settings or `/voicestudio <name>`), since
+  reading another plugin's settings is not a supported API.
+
 ## 1.1.0
 
 - **Renamed the plugin to `voicestudio-tts`.** The id `voicestudio` belongs to a different plugin (a tool client for the same VoiceStudio app) already listed in the Hermes catalog, so the two cannot share a name. Provider setting is now `tts.provider: voicestudio-tts`; the old `plugins.entries.voicestudio` settings are still read as a fallback.

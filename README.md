@@ -17,7 +17,7 @@ Connect **VoiceStudio** to your **Hermes Agent** to enable realistic, custom loc
 
 > **Why `voicestudio-tts`?** The plain `voicestudio` plugin id belongs to a different project, a tool client for the same VoiceStudio app. This one registers a Hermes TTS provider, so it ships under its own id and the two can live side by side.
 
-- **Voice by name:** Pick a voice you saved in VoiceStudio by name. Run `/voicestudio` to list them, `/voicestudio <name>` to set one. `/voicestudio refresh` writes those names into `plugin.yaml`, which is what turns the settings field into a list.
+- **Voice by name:** Pick a voice you saved in VoiceStudio by name. Run `/voicestudio` to list them and `/voicestudio <name>` to set one. `/voicestudio refresh` saves names in plugin state by default and leaves the installed folder untouched. Set `sync_dropdown: true` and refresh to also add a clickable Settings list.
 - **Per-Profile Setup:** Give different Hermes profiles distinct voices.
 - **Zero Scripting Required:** Fully integrated UI configuration and commands.
 
@@ -64,8 +64,8 @@ Choose your preferred installation method:
 3. Paste repo URL: `https://github.com/EternalShade3D/voicestudio-hermes-plugin.git`
 4. Select your target profile and confirm installation.
 5. Make it the active provider: **Settings → Voice → Text to speech → Text-To-Speech Provider → VoiceStudio**.
-6. Start **VoiceStudio**, then in any chat run `/voicestudio refresh` so the plugin reads your saved voices and writes the dropdown list.
-7. Pick your voice: **Capabilities → Plugins → VoiceStudio → Voice** dropdown, or run `/voicestudio <name>`.
+6. Start **VoiceStudio**, then in any chat run `/voicestudio refresh` to save your voices to plugin state.
+7. Pick one with `/voicestudio <name>`. For a GUI dropdown, turn on `sync_dropdown` in plugin settings and run `/voicestudio refresh` again.
 
 Plugin settings hold the advanced options (server URL, engine, timeout, cache retention). The provider picker lives in the Voice settings, not in the plugin panel.
 
@@ -105,7 +105,7 @@ hermes config set tts.provider voicestudio-tts
    /voicestudio refresh
    ```
 3. Select your voice:
-   - **Via GUI:** **Capabilities → Plugins → VoiceStudio → Voice**. Until `/voicestudio refresh` runs, this field is plain text; after it, your saved voices appear as a dropdown list.
+   - **Via GUI:** The `voice` field is plain text by default. To populate a dropdown, set `sync_dropdown: true` in plugin settings and run `/voicestudio refresh`.
    - **Via Command:** run `/voicestudio <voice_name>` in chat.
 
 That's it. Your bot now speaks with the voice you picked.
@@ -126,7 +126,7 @@ Retention defaults to **100 MB per profile**: when the cache grows past that, th
 | :--- | :--- |
 | `/voicestudio` | Displays current voice settings and available local voices. |
 | `/voicestudio <name>` | Quickly switches the active voice profile by name. |
-| `/voicestudio refresh` | Re-scans VoiceStudio and writes the voice names into `plugin.yaml`. Run this when you add a voice in the app. |
+| `/voicestudio refresh` | Re-scans VoiceStudio and saves the names. With `sync_dropdown: true` it also writes them into `plugin.yaml` so the Settings voice list updates. Run it when you add a voice in the app. |
 
 ---
 
@@ -135,10 +135,11 @@ Retention defaults to **100 MB per profile**: when the cache grows past that, th
 | Key | Default Value | Description |
 | :--- | :--- | :--- |
 | `base_url` | `http://127.0.0.1:3900` | Local API server endpoint for VoiceStudio. |
-| `voice` | *(User choice)* | Voice name or ID. Plain text until `/voicestudio refresh` writes `choices` into `plugin.yaml`, then it renders as a dropdown. |
+| `voice` | *(User choice)* | Voice name or ID. Plain text by default. With `sync_dropdown: true`, `/voicestudio refresh` mirrors names into `plugin.yaml` and the field becomes a dropdown. |
 | `engine` | *(Empty)* | Specific TTS engine override if required by your setup. |
 | `timeout_s` | `180` | Audio generation request timeout in seconds. |
 | `warm_path` / `release_path` | *(Empty)* | Optional hooks triggered before/after read-aloud requests. |
+| `sync_dropdown` | `false` | **On:** after `/voicestudio refresh`, voices appear in the Settings list. The plugin writes `choices` into its own `plugin.yaml`, so the installed folder shows as changed. **Off (default):** refresh stores names in plugin state only; use `/voicestudio <name>`. |
 | `debug` | `false` | Enables verbose debug logging for voice resolution. |
 
 ### Audio cache (Hermes `tts.` settings)

@@ -121,17 +121,24 @@ def looks_like_wav(body):
     return isinstance(body, (bytes, bytearray)) and body[:4] == b"RIFF" and body[8:12] == b"WAVE"
 
 
-def list_profiles(base_url, timeout=PROBE_TIMEOUT_S):
-    """Saved voices from GET /profiles. Returns [] on any failure."""
+def _fetch_profiles(base_url, timeout=PROBE_TIMEOUT_S):
+    """Fetch saved voices; return [] for a valid empty result and None on request/parse failure."""
     r = api_get(base_url, PROFILES_PATH, timeout=timeout)
     if r.get("status") != 200:
-        return []
+        return None
     try:
         payload = json.loads(_decode(r.get("body") or b""))
     except Exception:
-        return []
+        return None
     items = payload.get("profiles") if isinstance(payload, dict) else payload
-    return [p for p in (items or []) if isinstance(p, dict) and p.get("id")]
+    if not isinstance(items, list):
+        return None
+    return [p for p in items if isinstance(p, dict) and p.get("id")]
+
+
+def list_profiles(base_url, timeout=PROBE_TIMEOUT_S):
+    """Saved voices from GET /profiles. Returns [] on any failure."""
+    return _fetch_profiles(base_url, timeout=timeout) or []
 
 
 def _gender(profile):
@@ -152,14 +159,19 @@ def list_voices_cached(base_url, ttl=_VOICES_TTL_S, force=False):
     key = normalize_base_url(base_url)
     now = time.time()
     cache = _voices_cache
-    if not force and cache["key"] == key and (now - cache["at"]) < ttl and cache["voices"]:
+    if not force and cache["key"] == key and (now - cache["at"]) < ttl:
         return cache["voices"]
+    profiles = _fetch_profiles(base_url)
+    if profiles is None:
+        # A forced refresh must report failure instead of presenting the stale cache as fresh.
+        if force:
+            return []
+        return cache["voices"] if cache["key"] == key else []
     voices = [{"id": p["id"], "display": p.get("name") or p["id"],
                "language": p.get("language") or "",
-               "gender": _gender(p)} for p in list_profiles(base_url)]
-    if voices:
-        cache.update({"key": key, "at": now, "voices": voices})
-    return cache["voices"] if cache["key"] == key else voices
+               "gender": _gender(p)} for p in profiles]
+    cache.update({"key": key, "at": now, "voices": voices})
+    return voices
 
 
 def resolve_voice(base_url, name, timeout=PROBE_TIMEOUT_S):

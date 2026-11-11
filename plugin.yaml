@@ -5,9 +5,10 @@ manifest_version: 2
 api_version: 1
 description: 'VoiceStudio TTS provider for Hermes: registers a TTS provider so replies
   can be read aloud with your own local VoiceStudio voices, per profile. Uses the
-  app''s POST /generate route and lists saved voices through GET /profiles; the voice
-  setting is plain text until /voicestudio refresh writes the choices list, which
-  turns it into a dropdown. Optional warm/release paths fire on the read-aloud lease.
+  app''s POST /generate route and lists saved voices through GET /profiles; /voicestudio
+  refresh stores names in plugin state by default. The voice setting is plain text
+  unless sync_dropdown is enabled and refresh writes choices for a Settings dropdown.
+  Optional warm/release paths fire on the read-aloud lease.
   Sends only reply text to the configured local server (default http://127.0.0.1:3900);
   no credentials, no telemetry, no self-update.'
 author: EternalShade3D

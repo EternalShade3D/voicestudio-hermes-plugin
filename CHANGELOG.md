@@ -4,14 +4,15 @@
 
 - **Settings are read through `ctx.get_config`**, not by opening `config.yaml`: the provider keeps
   the plugin context, so a voice change applies live and the plugin needs no direct file access.
-- **No undeclared YAML import.** It used PyYAML, which was never declared and which Hermes does not
-  ship, so on a stock install live voice changes fell back to the stale value and
-  `/voicestudio refresh` failed with `No module named 'yaml'`. Settings are read through
-  `ctx.get_config`, and the manifest write uses `hermes_yaml`, the YAML module Hermes ships, so the
-  plugin still declares no dependency.
+- **No undeclared YAML import.** The old implementation imported PyYAML without declaring it, so
+  `/voicestudio refresh` failed on stock installs. The manifest update now uses the maintainer-approved
+  `hermes_yaml.safe_load/safe_dump`; settings are read through `ctx.get_config` and no direct config
+  file access is needed.
 - **`/voicestudio refresh` saves the voice list first**, then mirrors it into `plugin.yaml` when
   `sync_dropdown` is on. A failed manifest write no longer loses the list, and an empty app response
-  never wipes a known one. The write goes through a temp file and keeps the file's own key order.
+  never wipes saved plugin state. Refresh distinguishes a valid empty profile list from a failed
+  request, so it reports zero voices instead of reusing a stale cached list. The write goes through a
+  temp file and keeps the file's own key order.
 - **New `sync_dropdown` setting** (default `false`). Off: the installed folder is never modified and
   voices are picked with `/voicestudio <name>`. On: the names are written into `plugin.yaml` so
   Settings shows a voice list, at the cost of the installed folder showing as changed.

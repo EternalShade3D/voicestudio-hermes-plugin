@@ -2,17 +2,17 @@
 
 ## What this is
 
-A Hermes TTS plugin that bridges VoiceStudio (a local TTS app) into Hermes Agent. Instead of a hardcoded voice ID in a shell script, the voice becomes a configurable setting: a `voice` field you fill with the name you gave the voice in VoiceStudio. The settings field shows it as a list only after `/voicestudio refresh` writes `choices` into `plugin.yaml`.
+A Hermes TTS plugin that bridges VoiceStudio (a local TTS app) into Hermes Agent. Instead of a hardcoded voice ID in a shell script, the voice becomes a configurable setting: a `voice` field you fill with the name you gave the voice in VoiceStudio. `/voicestudio refresh` stores names in plugin state by default; the settings field becomes a list only when `sync_dropdown: true` is enabled and refresh writes `choices` into `plugin.yaml`.
 
-Hermes minimum: `>=0.21` (`requires_hermes` in `plugin.yaml`). Current Hermes release is 0.23.
+Hermes minimum: `>=0.21` (`requires_hermes` in `plugin.yaml`).
 
 Video, how to install in Hermes Desktop: https://youtu.be/qGd0liG_6vk
-Release: https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases/tag/v1.0.0
+Releases: https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases
 
 ## How it works
 
 1. VoiceStudio runs as a local HTTP server (default: `http://127.0.0.1:3900`)
-2. The plugin registers a TTS provider named `voicestudio` with Hermes
+2. The plugin registers a TTS provider named `voicestudio-tts` with Hermes
 3. Hermes calls `synthesize()` with text → plugin POSTs to VoiceStudio's `/generate` endpoint → returns WAV audio
 4. Voices are fetched from VoiceStudio's `GET /profiles` endpoint
 5. The `voice` setting accepts a voice name or an id. Names are resolved at synthesis time through `GET /profiles`.
@@ -26,7 +26,7 @@ Release: https://github.com/EternalShade3D/voicestudio-hermes-plugin/releases/ta
 3. Paste `https://github.com/EternalShade3D/voicestudio-hermes-plugin.git`.
 4. Select the target profile and confirm. Wait for Hermes to finish.
 5. Make it the active provider: **Settings → Voice → Text to speech → Text-To-Speech Provider → VoiceStudio**.
-6. With VoiceStudio open, run `/voicestudio refresh` to load your saved voice names. Pick one with `/voicestudio <name>`, or turn on `sync_dropdown` in the plugin settings and refresh again to get a clickable list in **Capabilities → Plugins → VoiceStudio → Voice**.
+6. With VoiceStudio open, run `/voicestudio refresh` to save voice names to plugin state. Pick one with `/voicestudio <name>`, or turn on `sync_dropdown` in plugin settings and refresh again to get a clickable list.
 
 ### Per profile
 
@@ -51,12 +51,12 @@ Settings are stored in `config.yaml` under `plugins.entries.voicestudio-tts.sett
 | Key | Default | Description |
 |---|---|---|
 | `base_url` | `http://127.0.0.1:3900` | VoiceStudio server URL |
-| `voice` | `(empty)` | Voice name or id, resolved dynamically. `plugin.yaml` default is empty |
+| `voice` | `(empty)` | Voice name or id, resolved dynamically. Plain text by default; `sync_dropdown: true` plus refresh adds a Settings list. |
 | `engine` | (empty) | Engine name; empty = app default |
 | `timeout_s` | 180 | Read timeout for generation |
 | `warm_path` | (empty) | App path called on read-aloud lease start |
 | `release_path` | (empty) | App path called on read-aloud lease release |
-| `sync_dropdown` | false | true = names are written into `plugin.yaml` so Settings shows a voice list (folder becomes modified). false = names stay in plugin state, folder untouched, pick with `/voicestudio <name>` |
+| `sync_dropdown` | false | true = refresh also writes names into `plugin.yaml` so Settings shows a voice list (folder becomes modified). false = names stay in plugin state, folder untouched, pick with `/voicestudio <name>` |
 | `debug` | false | Enable debug logging for voice resolution |
 
 ## Commands
@@ -73,12 +73,12 @@ Settings are stored in `config.yaml` under `plugins.entries.voicestudio-tts.sett
 
 - `__init__.py` — Plugin registration, TTS provider implementation, slash commands
 - `client.py` — HTTP layer (stdlib only), plus `resolve_voice()` which maps saved voice names to ids through `GET /profiles`
-- `plugin.yaml` — Plugin manifest and config schema. Ships with no `choices` key, so the settings field is plain text until `/voicestudio refresh` writes `choices`
+- `plugin.yaml` — Plugin manifest and config schema. Ships with no `choices` key, so the settings field is plain text unless `sync_dropdown: true` is enabled before refresh.
 - `README.md` — Quick reference
 
 ### Key design decisions
 
-1. **Dynamic voice resolution**: `default_voice()` reads from `config.yaml` at synthesis time using `get_hermes_home()` (profile-scoped via contextvar, NOT `os.environ`). This ensures settings changes take effect without gateway restart.
+1. **Dynamic settings**: The provider keeps its plugin context and reads settings through `ctx.get_config()` when needed. Voice, URL, engine, timeout, and hook changes take effect without a gateway restart.
 
 2. **Ignore passed voice**: `synthesize()` uses `self.default_voice()` unconditionally, ignoring any `voice` param from the TTS system. This prevents the TTS system from overriding the configured voice.
 
@@ -111,11 +111,11 @@ A `tts.providers.voicestudio: type: command` entry in `config.yaml` wins over th
 
 ### Voice not changing after settings update
 
-The plugin instance is created once at registration. `self._voice` stays stale. Fixed by making `default_voice()` read from config dynamically. If still broken, check that `get_hermes_home()` returns the correct profile home (enable `debug: true` in plugin settings).
+The plugin instance is created once at registration. It keeps the context and reads `voice` through `ctx.get_config()` at synthesis time, so the old captured value should not persist. If still broken, enable `debug: true` and confirm the active profile has the expected plugin setting.
 
 ### Voice field shows nothing to pick
 
-As shipped `plugin.yaml` has no `choices` key, so the `voice` field is plain text you type. Run `/voicestudio refresh` to write the current voice names into `plugin.yaml` and get a pickable list.
+As shipped, `plugin.yaml` has no `choices` key, so the `voice` field is plain text. `/voicestudio refresh` stores names in plugin state. To get a pickable Settings list, enable `sync_dropdown: true` and refresh again; this opts into writing `choices` into `plugin.yaml`.
 
 ### Desktop source changes not taking effect
 

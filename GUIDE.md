@@ -56,6 +56,7 @@ Settings are stored in `config.yaml` under `plugins.entries.voicestudio-tts.sett
 | `timeout_s` | 180 | Read timeout for generation |
 | `warm_path` | (empty) | App path called on read-aloud lease start |
 | `release_path` | (empty) | App path called on read-aloud lease release |
+| `sync_dropdown` | false | true = names are written into `plugin.yaml` so Settings shows a voice list (folder becomes modified). false = names stay in plugin state, folder untouched, pick with `/voicestudio <name>` |
 | `debug` | false | Enable debug logging for voice resolution |
 
 ## Commands
@@ -64,7 +65,7 @@ Settings are stored in `config.yaml` under `plugins.entries.voicestudio-tts.sett
 |---|---|
 | `/voicestudio` | Show current voice and list available voices |
 | `/voicestudio <name>` | Set voice by name (resolved dynamically) |
-| `/voicestudio refresh` | Fetch voices from the app and write them as `choices` into `plugin.yaml` |
+| `/voicestudio refresh` | Fetch voices and save them; with `sync_dropdown` on, also write them into `plugin.yaml` |
 
 ## Architecture
 

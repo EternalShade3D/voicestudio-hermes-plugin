@@ -58,6 +58,38 @@ def api_get(base_url, path, timeout=PROBE_TIMEOUT_S):
         return {"error": str(e), "kind": type(e).__name__}
 
 
+def describe_failure(result, base_url="", timeout=None, voice=""):
+    """One short sentence a person can act on, for an envelope from api_get/api_post_form.
+
+    The app's own 500 body is a JSON paragraph of advice; pasting it into a toast is useless.
+    """
+    kind = str(result.get("kind") or "")
+    err = str(result.get("error") or "")
+    status = result.get("status")
+    body = _decode(result.get("body") or b"") if result.get("body") else ""
+    low = body.lower()
+
+    if not status:
+        if "timed out" in err.lower() or kind == "TimeoutError":
+            return ("VoiceStudio did not answer in time%s. It may still be loading a voice; "
+                    "increase the timeout or try again."
+                    % (" (%ss)" % timeout if timeout else ""))
+        return ("VoiceStudio is not running, or not reachable at %s. Open VoiceStudio and try again."
+                % (normalize_base_url(base_url) or "the configured address"))
+
+    if status == 500 and ("gpu" in low or "oom" in low or "out of memory" in low):
+        return ("VoiceStudio ran out of graphics memory. Try freeing VRAM and closing heavy "
+                "apps, or change VoiceStudio Settings.")
+    if status == 500 and ("model" in low and "load" in low):
+        return "VoiceStudio could not load the voice model. Try again, or pick a smaller engine in the app."
+    if status == 404:
+        return ("VoiceStudio did not recognize the voice: %s. Run /voicestudio refresh, "
+                "then pick a valid voice." % (voice or "you selected"))
+    if status >= 500:
+        return "VoiceStudio reported an internal error (HTTP %s). Check its own log or restart it." % status
+    return "VoiceStudio refused the request (HTTP %s)." % status
+
+
 def api_post_form(base_url, path, fields, timeout=DEFAULT_READ_TIMEOUT_S):
     """POST application/x-www-form-urlencoded; returns the same envelope shape. Never raises."""
     url = normalize_base_url(base_url) + path

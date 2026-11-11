@@ -126,7 +126,7 @@ Retention defaults to **100 MB per profile**: when the cache grows past that, th
 | :--- | :--- |
 | `/voicestudio` | Displays current voice settings and available local voices. |
 | `/voicestudio <name>` | Quickly switches the active voice profile by name. |
-| `/voicestudio refresh` | Re-scans VoiceStudio and writes the voice names into `plugin.yaml`. Run this when you add a voice in the app. |
+| `/voicestudio refresh` | Re-scans VoiceStudio and saves the names. With `sync_dropdown: true` it also writes them into `plugin.yaml` so the Settings voice list updates. Run it when you add a voice in the app. |
 
 ---
 
@@ -139,6 +139,7 @@ Retention defaults to **100 MB per profile**: when the cache grows past that, th
 | `engine` | *(Empty)* | Specific TTS engine override if required by your setup. |
 | `timeout_s` | `180` | Audio generation request timeout in seconds. |
 | `warm_path` / `release_path` | *(Empty)* | Optional hooks triggered before/after read-aloud requests. |
+| `sync_dropdown` | `false` | **On:** your voices appear in the Settings voice list, picked with the mouse. The plugin then rewrites its own `plugin.yaml`, so the installed folder shows as changed. **Off (default):** the folder is never touched, you pick with `/voicestudio <name>`. |
 | `debug` | `false` | Enables verbose debug logging for voice resolution. |
 
 ### Audio cache (Hermes `tts.` settings)
